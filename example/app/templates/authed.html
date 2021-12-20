@@ -1,0 +1,28 @@
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <title>Demo OIDC App</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+</head>
+<body>
+<h3>Hello.</h3>
+<div>
+    <form action="/api-call" method="post">
+        <button type="submit">Call API</button>
+    </form>
+</div>
+<div>
+    <p>User access token:</p>
+    <code>
+        {{ .token }}
+    </code>
+</div>
+<div>
+    <p>Data (if any):</p>
+    <code>
+        {{ .data }}
+    </code>
+</div>
+</body>
+</html>
