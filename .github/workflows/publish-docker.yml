@@ -38,8 +38,8 @@ jobs:
             BUILD_VERSION=${{ env.BUILD_VERSION }}
             COMMIT_SHA=${{ github.sha }}
           tags: |
-            ghcr.io/wirepact/k8s-basic-auth-translator:latest
-            ghcr.io/wirepact/k8s-basic-auth-translator:${{ github.sha }}
-            ghcr.io/wirepact/k8s-basic-auth-translator:${{ env.BUILD_VERSION }}
+            ghcr.io/wirepact/k8s-keycloak-oidc-translator:latest
+            ghcr.io/wirepact/k8s-keycloak-oidc-translator:${{ github.sha }}
+            ghcr.io/wirepact/k8s-keycloak-oidc-translator:${{ env.BUILD_VERSION }}
       - name: Image digest
         run: echo ${{ steps.docker_build.outputs.digest }}
