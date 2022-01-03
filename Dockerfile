@@ -47,6 +47,8 @@ ENV BUILD_VERSION=${BUILD_VERSION}
 COPY --from=build /etc/passwd /etc/group /etc/
 COPY --from=build /go/bin/app /app/app
 
+RUN chown -R appuser:appuser /app
+
 USER appuser:appuser
 
 ENTRYPOINT ["/app/app"]
