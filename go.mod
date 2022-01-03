@@ -3,7 +3,7 @@ module wirepact.ch/k8s-keycloak-oidc-translator
 go 1.16
 
 require (
-	github.com/WirePact/go-translator v1.0.0
+	github.com/WirePact/go-translator v1.1.0
 	github.com/caos/oidc v1.0.0
 	github.com/cncf/xds/go v0.0.0-20211216145620-d92e9ce0af51 // indirect
 	github.com/envoyproxy/go-control-plane v0.10.1

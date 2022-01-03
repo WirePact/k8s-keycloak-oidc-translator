@@ -36,6 +36,8 @@ github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802/go.mod h1:IVnqGOEym
 github.com/OneOfOne/xxhash v1.2.2/go.mod h1:HSdplMjZKSmBqAxg5vPj2TmRDmfkzw+cTzAElWljhcU=
 github.com/WirePact/go-translator v1.0.0 h1:g3o6JbykDgutLjUCWBKG/tOIVRGogjrRnO37Ec480BU=
 github.com/WirePact/go-translator v1.0.0/go.mod h1:39V6Z7n5G7o1XbDnPnEI31xyX99x2GGgQIoaU2dgjEY=
+github.com/WirePact/go-translator v1.1.0 h1:lbFMmbiSPHdJMPTM5cigeBvSdif+/93VoT5bHVTua6Q=
+github.com/WirePact/go-translator v1.1.0/go.mod h1:s3DQy6eqXjfeIfINa+SAe9YJJgzlz8O73FSA2SDgvRM=
 github.com/antihax/optional v1.0.0/go.mod h1:uupD/76wgC+ih3iEmQUL+0Ugr19nfwCT1kdvxnR2qWY=
 github.com/caos/logging v0.0.2/go.mod h1:9LKiDE2ChuGv6CHYif/kiugrfEXu9AwDiFWSreX7Wp0=
 github.com/caos/oidc v1.0.0 h1:3sHkYf8zsuARR89qO9CyvfYhHGdliWPcou4glzGMXmQ=
