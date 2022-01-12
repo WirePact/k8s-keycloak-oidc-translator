@@ -40,7 +40,7 @@ services:
       HTTP_PROXY: http://envoy-app:8100
 
   envoy-app:
-    image: envoyproxy/envoy-alpine:v1.20-latest
+    image: envoyproxy/envoy-alpine:v1.21-latest
     command: envoy -c /etc/envoy/envoy.yaml --component-log-level ext_authz:trace
     volumes:
       - ./hack/envoy-config.app.yaml:/etc/envoy/envoy.yaml:ro
@@ -62,7 +62,7 @@ services:
       CLIENT_SECRET: 816095db-2190-4d77-80e4-a096c6c7a889
 
   envoy-api:
-    image: envoyproxy/envoy-alpine:v1.20-latest
+    image: envoyproxy/envoy-alpine:v1.21-latest
     command: envoy -c /etc/envoy/envoy.yaml --component-log-level ext_authz:trace
     volumes:
       - ./hack/envoy-config.api.yaml:/etc/envoy/envoy.yaml:ro
