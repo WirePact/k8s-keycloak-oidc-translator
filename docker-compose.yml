@@ -1,0 +1,64 @@
+version: '3.8'
+services:
+  pki:
+    image: ghcr.io/wirepact/k8s-pki:latest
+    environment:
+      - DEBUG=true
+      - LOCAL=true
+    ports:
+      - 8080:8080
+
+  oidc-provider:
+    image: ghcr.io/wirepact/demo-applications/oidc-provider:latest
+    environment:
+      - PORT=9090
+      - ISSUER=http://host.docker.internal:9090
+    ports:
+      - 9090:9090
+
+  app:
+    image: ghcr.io/wirepact/demo-applications/oidc-app:latest
+    environment:
+      - HTTP_PROXY=http://envoy-app:8500
+      - PORT=8001
+      - NEXTAUTH_URL=http://host.docker.internal:8000
+      - OIDC_ISSUER=http://host.docker.internal:3001
+      - OIDC_CLIENT_ID=wire-pact
+      - OIDC_CLIENT_SECRET=demo-oidc-provider
+      - API_URL=http://envoy-api:9000/swapi/people
+    networks:
+      - app-net
+
+  envoy-app:
+    image: envoyproxy/envoy:v1.20-latest
+    command: envoy -c /etc/envoy/envoy.yaml --component-log-level ext_authz:trace
+    volumes:
+      - ./hack/envoy-config.app.yaml:/etc/envoy/envoy.yaml:ro
+    networks:
+      - app-net
+    ports:
+      - 8000:8000
+
+  api:
+    image: ghcr.io/wirepact/demo-applications/oidc-api:latest
+    environment:
+      - PORT=9001
+      - OIDC__ISSUER=http://host.docker.internal:3001
+      - OIDC__CLIENTID=wire-pact
+      - OIDC__CLIENTSECRET=demo-oidc-provider
+    networks:
+      - app-net
+
+  envoy-api:
+    image: envoyproxy/envoy:v1.20-latest
+    command: envoy -c /etc/envoy/envoy.yaml --component-log-level ext_authz:trace
+    volumes:
+      - ./hack/envoy-config.api.yaml:/etc/envoy/envoy.yaml:ro
+    networks:
+      - app-net
+    ports:
+      - 9000:9000
+
+networks:
+  app-net:
+    driver: bridge
