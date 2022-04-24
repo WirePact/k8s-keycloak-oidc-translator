@@ -1,7 +1,7 @@
 version: '3.8'
 services:
   pki:
-    image: ghcr.io/wirepact/k8s-pki:1.1.0
+    image: ghcr.io/wirepact/k8s-pki:2.1.11
     command:
       - '-local'
     ports:
