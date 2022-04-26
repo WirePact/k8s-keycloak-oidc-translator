@@ -22,9 +22,9 @@ services:
       - HTTP_PROXY=http://envoy-app:8500
       - PORT=8001
       - NEXTAUTH_URL=http://host.docker.internal:8000
-      - OIDC_ISSUER=http://host.docker.internal:3001
-      - OIDC_CLIENT_ID=wire-pact
-      - OIDC_CLIENT_SECRET=demo-oidc-provider
+      - OIDC_ISSUER=http://host.docker.internal:9090
+      - OIDC_CLIENT_ID=wirepact
+      - OIDC_CLIENT_SECRET=secret
       - API_URL=http://envoy-api:9000/swapi/people
     networks:
       - app-net
@@ -43,9 +43,9 @@ services:
     image: ghcr.io/wirepact/demo-applications/oidc-api:latest
     environment:
       - PORT=9001
-      - OIDC__ISSUER=http://host.docker.internal:3001
-      - OIDC__CLIENTID=wire-pact
-      - OIDC__CLIENTSECRET=demo-oidc-provider
+      - OIDC__ISSUER=http://host.docker.internal:9090
+      - OIDC__CLIENTID=wirepact
+      - OIDC__CLIENTSECRET=secret
     networks:
       - app-net
 
