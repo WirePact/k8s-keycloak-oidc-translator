@@ -6,27 +6,48 @@ on:
       - main
 
 jobs:
+  get_next_version:
+    runs-on: ubuntu-latest
+    name: Fetch next version number
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: true
+
+      - name: semantic release
+        id: semantic
+        uses: cycjimmy/semantic-release-action@v3
+        with:
+          dry_run: true
+          working_directory: .github/fetch_version
+
+      - run: echo ${{ steps.semantic.outputs.new_release_version }}
+      - run: echo ${{ steps.semantic.outputs.new_release_published }}
+
+    outputs:
+      create_release: ${{ steps.semantic.outputs.new_release_published }}
+      new_version: ${{ steps.semantic.outputs.new_release_version }}
+
   build_images:
+    needs: get_next_version
+    if: needs.get_next_version.outputs.create_release == 'true'
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v2
+      - uses: actions/checkout@v3
+        with:
+          submodules: true
+
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v1
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Set up Docker Buildx
         id: buildx
         uses: docker/setup-buildx-action@v1
-      - name: Semantic Release
-        uses: cycjimmy/semantic-release-action@v2
-        with:
-          extra_plugins: |
-            @semantic-release/exec
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Build and Push
         id: docker_build
         uses: docker/build-push-action@v2
@@ -35,11 +56,14 @@ jobs:
           file: ./Dockerfile
           push: true
           build-args: |
-            BUILD_VERSION=${{ env.BUILD_VERSION }}
+            BUILD_VERSION=${{ needs.get_next_version.outputs.new_version }}
             COMMIT_SHA=${{ github.sha }}
           tags: |
-            ghcr.io/wirepact/k8s-keycloak-oidc-translator:latest
-            ghcr.io/wirepact/k8s-keycloak-oidc-translator:${{ github.sha }}
-            ghcr.io/wirepact/k8s-keycloak-oidc-translator:${{ env.BUILD_VERSION }}
-      - name: Image digest
-        run: echo ${{ steps.docker_build.outputs.digest }}
+            ghcr.io/wirepact/k8s-token-exchange-translator:latest
+            ghcr.io/wirepact/k8s-token-exchange-translator:${{ github.sha }}
+            ghcr.io/wirepact/k8s-token-exchange-translator:${{ needs.get_next_version.outputs.new_version }}
+
+      - name: Semantic Release
+        uses: cycjimmy/semantic-release-action@v3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

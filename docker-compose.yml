@@ -1,46 +1,36 @@
 version: '3.8'
 services:
   pki:
-    image: ghcr.io/wirepact/k8s-pki:1.1.0
-    command:
-      - '-local'
-    ports:
-      - 9090:8080
-
-  keycloak:
-    image: quay.io/keycloak/keycloak:latest
+    image: ghcr.io/wirepact/k8s-pki:latest
     environment:
-      KEYCLOAK_USER: admin
-      KEYCLOAK_PASSWORD: admin
-      KEYCLOAK_IMPORT: /tmp/translator-realm.json
-    command:
-      - '-Dkeycloak.profile=preview'
-      - '-Dkeycloak.profile.feature.token_exchange=enabled'
-      - '-b 0.0.0.0'
-    networks:
-      - app-net
+      - DEBUG=true
+      - LOCAL=true
     ports:
       - 8080:8080
-    volumes:
-      - ./hack/translator-realm.json:/tmp/translator-realm.json:ro
+
+  oidc-provider:
+    image: ghcr.io/wirepact/demo-applications/oidc-provider:latest
+    environment:
+      - PORT=9090
+      - ISSUER=http://host.docker.internal:9090
+    ports:
+      - 9090:9090
 
   app:
-    build:
-      context: example/app
-      dockerfile: Dockerfile
+    image: ghcr.io/wirepact/demo-applications/oidc-app:latest
+    environment:
+      - HTTP_PROXY=http://envoy-app:8500
+      - PORT=8001
+      - NEXTAUTH_URL=http://host.docker.internal:8000
+      - OIDC_ISSUER=http://host.docker.internal:9090
+      - OIDC_CLIENT_ID=wirepact
+      - OIDC_CLIENT_SECRET=secret
+      - API_URL=http://envoy-api:9000/swapi/people
     networks:
       - app-net
-    command:
-      - '-api=http://envoy-api:9000/albums'
-    depends_on:
-      - envoy-app
-    environment:
-      ISSUER: http://host.docker.internal:8080/auth/realms/translator
-      CLIENT_ID: testoidcapp
-      HTTP_PROXY: http://envoy-app:8100
 
   envoy-app:
-    image: envoyproxy/envoy-alpine:v1.20-latest
+    image: envoyproxy/envoy:v1.22-latest
     command: envoy -c /etc/envoy/envoy.yaml --component-log-level ext_authz:trace
     volumes:
       - ./hack/envoy-config.app.yaml:/etc/envoy/envoy.yaml:ro
@@ -48,21 +38,19 @@ services:
       - app-net
     ports:
       - 8000:8000
-      - 8100:8100
 
   api:
-    build:
-      context: example/api
-      dockerfile: Dockerfile
+    image: ghcr.io/wirepact/demo-applications/oidc-api:latest
+    environment:
+      - PORT=9001
+      - OIDC__ISSUER=http://host.docker.internal:9090
+      - OIDC__CLIENTID=wirepact
+      - OIDC__CLIENTSECRET=secret
     networks:
       - app-net
-    environment:
-      ISSUER: http://host.docker.internal:8080/auth/realms/translator
-      CLIENT_ID: testoidcapi
-      CLIENT_SECRET: 816095db-2190-4d77-80e4-a096c6c7a889
 
   envoy-api:
-    image: envoyproxy/envoy-alpine:v1.20-latest
+    image: envoyproxy/envoy:v1.22-latest
     command: envoy -c /etc/envoy/envoy.yaml --component-log-level ext_authz:trace
     volumes:
       - ./hack/envoy-config.api.yaml:/etc/envoy/envoy.yaml:ro
