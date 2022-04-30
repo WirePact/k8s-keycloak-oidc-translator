@@ -15,7 +15,7 @@ mod provider;
 #[derive(Clone, Debug, ArgEnum)]
 enum AuthType {
     ClientCredentials,
-    // JWTProfile,
+    JWTProfile,
 }
 
 #[derive(Parser, Debug)]
