@@ -1,4 +1,3 @@
-use std::fmt::format;
 use std::sync::Arc;
 
 use clap::{ArgEnum, Parser};
@@ -16,7 +15,7 @@ mod provider;
 #[derive(Clone, Debug, ArgEnum)]
 enum AuthType {
     ClientCredentials,
-    JWTProfile,
+    // JWTProfile,
 }
 
 #[derive(Parser, Debug)]
@@ -67,10 +66,10 @@ struct Cli {
     ///
     /// - JWT Profile: The translator will use a JWT profile
     ///   ([RFC7523](https://datatracker.ietf.org/doc/html/rfc7523)) to authenticate
-    ///   itself against the issuer.
+    ///   itself against the issuer. (not implemented yet).
     ///
     /// Depending on the selected auth type, other parameters are required.
-    #[clap(arg_enum, long, env)]
+    #[clap(arg_enum, long, env, default_value = "client-credentials")]
     auth_type: AuthType,
 
     /// Required if auth_type is set to [AuthType::ClientCredentials].
@@ -82,19 +81,18 @@ struct Cli {
     /// Defines the client secret to use when authenticating against the issuer.
     #[clap(long, env)]
     client_secret: Option<String>,
-
-    /// Required if auth_type is set to [AuthType::JWTProfile].
-    /// Defines the file path to the JWT profile to use when authenticating against the issuer.
-    /// The profile must be a JSON file containing the following fields:
-    ///
-    /// - userId: The user ID of the machine account.
-    ///
-    /// - keyId: The ID of the used signing RSA key.
-    ///
-    /// - key: The pem encoded RSA (private) key.
-    #[clap(long, env)]
-    jwt_profile_path: Option<String>,
-    // TODO: token endpoint auth type must be specified (client secret basic auth, client secret post, private key jwt)
+    // /// Required if auth_type is set to [AuthType::JWTProfile].
+    // /// Defines the file path to the JWT profile to use when authenticating against the issuer.
+    // /// The profile must be a JSON file containing the following fields:
+    // ///
+    // /// - userId: The user ID of the machine account.
+    // ///
+    // /// - keyId: The ID of the used signing RSA key.
+    // ///
+    // /// - key: The pem encoded RSA (private) key.
+    // #[clap(long, env)]
+    // jwt_profile_path: Option<String>,
+    // // TODO: token endpoint auth type must be specified (client secret basic auth, client secret post, private key jwt)
 }
 
 #[tokio::main]
@@ -114,23 +112,36 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     info!("Starting oidc token exchange translator '{}'.", cli.name);
     debug!("Debug logging is enabled.");
 
-    let url = format!("{}/.well-known/openid-configuration", cli.issuer);
+    let url = match cli.discovery_url {
+        Some(url) => url,
+        None => format!("{}/.well-known/openid-configuration", cli.issuer),
+    };
+
+    let authenticator: Arc<Mutex<dyn Provider>>;
+
+    match cli.auth_type {
+        AuthType::JWTProfile => {
+            unimplemented!("JWT Profile authentication is not implemented yet.")
+        }
+        AuthType::ClientCredentials => {
+            let client_id = cli
+                .client_id
+                .expect("client_id is required for client credentials authentication.");
+            let client_secret = cli
+                .client_secret
+                .expect("client_secret is required for client credentials authentication.");
+            authenticator = Arc::new(Mutex::new(
+                ClientCredentialProvider::new(&url, client_id, client_secret).await?,
+            ));
+        }
+    }
 
     run_translator(&TranslatorConfig {
         pki_address: cli.pki_address,
         common_name: cli.name,
         ingress_port: cli.ingress_port,
         egress_port: cli.egress_port,
-        translator: Arc::new(OidcTranslator {
-            authenticator: Arc::new(Mutex::new(
-                ClientCredentialProvider::new(
-                    &url,
-                    cli.client_id.unwrap(),
-                    cli.client_secret.unwrap(),
-                )
-                .await?,
-            )),
-        }),
+        translator: Arc::new(OidcTranslator { authenticator }),
     })
     .await?;
 

@@ -16,6 +16,7 @@ pub(crate) trait Provider: Send + Sync {
             .header(HTTP_AUTHORIZATION_HEADER, format!("Bearer {}", token))
             .send()
             .await?
+            .error_for_status()?
             .json::<UserInfo>()
             .await?;
 
@@ -24,13 +25,13 @@ pub(crate) trait Provider: Send + Sync {
 
     async fn access_token_for_user_id(&mut self, user_id: &str) -> Result<String, Box<dyn Error>>;
 
-    fn client(&self) -> &reqwest::Client;
+    fn client(&self) -> &Client;
 
     fn discovery(&self) -> &DiscoveryDocument;
 }
 
 pub(crate) struct ClientCredentialProvider {
-    http: reqwest::Client,
+    http: Client,
     client_id: String,
     client_secret: String,
     discovery: DiscoveryDocument,

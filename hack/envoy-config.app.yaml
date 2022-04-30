@@ -44,6 +44,8 @@ static_resources:
                         timeout: 1s
                       include_peer_certificate: true
                   - name: envoy.filters.http.router
+                    typed_config:
+                      '@type': type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
 
     - name: egress_listener
       address:
@@ -89,17 +91,20 @@ static_resources:
                         name: dynamic_forward_proxy_cache_config
                         dns_lookup_family: V4_ONLY
                         typed_dns_resolver_config:
-                          name: envoy.network.dns_resolver.dns_resolution_config
+                          name: envoy.network.dns_resolver.cares
                           typed_config:
-                            '@type': type.googleapis.com/envoy.config.core.v3.DnsResolutionConfig
+                            '@type': type.googleapis.com/envoy.extensions.network.dns_resolver.cares.v3.CaresDnsResolverConfig
                             resolvers:
                               - socket_address:
                                   address: '8.8.8.8'
                                   port_value: 53
+                            use_resolvers_as_fallback: true
                             dns_resolver_options:
                               use_tcp_for_dns_lookups: true
                               no_default_search_domain: true
                   - name: envoy.filters.http.router
+                    typed_config:
+                      '@type': type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
 
   clusters:
     - name: target_service
@@ -161,20 +166,14 @@ static_resources:
             name: dynamic_forward_proxy_cache_config
             dns_lookup_family: V4_ONLY
             typed_dns_resolver_config:
-              name: envoy.network.dns_resolver.dns_resolution_config
+              name: envoy.network.dns_resolver.cares
               typed_config:
-                "@type": type.googleapis.com/envoy.config.core.v3.DnsResolutionConfig
+                '@type': type.googleapis.com/envoy.extensions.network.dns_resolver.cares.v3.CaresDnsResolverConfig
                 resolvers:
                   - socket_address:
-                      address: "8.8.8.8"
+                      address: '8.8.8.8'
                       port_value: 53
+                use_resolvers_as_fallback: true
                 dns_resolver_options:
                   use_tcp_for_dns_lookups: true
                   no_default_search_domain: true
-#      transport_socket:
-#        name: envoy.transport_sockets.tls
-#        typed_config:
-#          "@type": type.googleapis.com/envoy.extensions.transport_sockets.tls.v3.UpstreamTlsContext
-#          common_tls_context:
-#            validation_context:
-#              trusted_ca: { filename: /etc/ssl/certs/ca-certificates.crt }

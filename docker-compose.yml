@@ -30,7 +30,7 @@ services:
       - app-net
 
   envoy-app:
-    image: envoyproxy/envoy:v1.20-latest
+    image: envoyproxy/envoy:v1.22-latest
     command: envoy -c /etc/envoy/envoy.yaml --component-log-level ext_authz:trace
     volumes:
       - ./hack/envoy-config.app.yaml:/etc/envoy/envoy.yaml:ro
@@ -50,7 +50,7 @@ services:
       - app-net
 
   envoy-api:
-    image: envoyproxy/envoy:v1.20-latest
+    image: envoyproxy/envoy:v1.22-latest
     command: envoy -c /etc/envoy/envoy.yaml --component-log-level ext_authz:trace
     volumes:
       - ./hack/envoy-config.api.yaml:/etc/envoy/envoy.yaml:ro
